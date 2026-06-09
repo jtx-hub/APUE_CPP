@@ -11,7 +11,7 @@
 // ==========================================
 void test_move_and_copy() {
     std::cout << "\n>>> [场景 1] 开启移动语义测试..." << std::endl;
-    FileDescriptor file("test_move.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    FileDescriptor file("../test_move.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
     file.Write("1. Hello from original file!\n");
 
     /* --- 极度危险的拷贝测试 (请取消注释尝试编译) --- */
@@ -21,9 +21,14 @@ void test_move_and_copy() {
     // FileDescriptor file_assign; file_assign = file; // 报错：使用了被删除的函数
 
     /* --- 安全的所有权转移 (移动语义) --- */
-    // 使用 std::move 剥夺原 file 的 fd，交给 file_moved
-    FileDescriptor file_moved = std::move(file);
+    //把 file 标记成 “可以移动的临时对象”,实际不做移动，需要自己实现移动操作
+    FileDescriptor file_moved = std::move(file);  // 触发移动构造
     file_moved.Write("2. Hello from moved file!\n");
+
+    FileDescriptor file_moved2("../test_move2.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644); 
+    file_moved2 = std::move(file);  // 触发移动赋值
+    file_moved2.Write("2. Hello from moved2 file!\n");
+
 
     // 严苛测试：此时原 file 的 fd 应该被你置为 -1 了。
     // 如果这里尝试用原 file 写入，应该抛出异常，而不是偷偷把数据写坏。
@@ -51,7 +56,7 @@ void test_open_failure() {
 // ==========================================
 void test_stack_unwinding() {
     std::cout << "\n>>> [场景 3] 开启异常栈展开测试..." << std::endl;
-    FileDescriptor file("test_unwind.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    FileDescriptor file("../test_unwind.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
     file.Write("Before crash...\n");
 
     std::cout << "    业务执行到一半，突然抛出致命异常！" << std::endl;
@@ -90,7 +95,7 @@ int main() {
     }
 
     std::cout << "\n============= 测试结束 =============" << std::endl;
-    std::cout << "请检查当前目录下是否生成了 test_move.txt 和 test_unwind.txt，" << std::endl;
+    std::cout << "请检查当前目录下是否生成了 test_move.txt 和 test_unwind.txt, " << std::endl;
     std::cout << "并且确认析构函数中的 close() 都被正确打印调用了！" << std::endl;
 
     return 0;
