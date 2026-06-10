@@ -3,7 +3,6 @@
 #include <cstring>
 #include <unistd.h>
 #include <csignal>
-#include <Windows.h>
 
 using namespace std;
 
@@ -66,6 +65,10 @@ void crash_use_after_free() {
     cout << ">>> 再次分配新内存，观察幽灵写入如何破坏系统..." << endl;
     int* ptr2 = new int(100); 
     cout << "新内存分配完毕。如果你能看到这行，说明 C++ 运行库正在强撑。" << endl;
+
+    cout << ">>> 终极引爆：第三次分配内存，逼迫管家访问 9999 地址！" << endl;
+    int* ptr3 = new int(200); 
+    cout << "如果你能看到这行，算我输！" << endl;
 }
 
 // ==========================================
@@ -96,7 +99,6 @@ void crash_double_free() {
 }
 
 int main() {
-    SetConsoleOutputCP(CP_UTF8);
 
     signal(SIGSEGV, crash_handler);
     signal(SIGABRT, crash_handler);
